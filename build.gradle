@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+}
+
+group = 'br.com.ntconsult'
+version = '1.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // SDK oficial da Anthropic para Java (equivale ao @anthropic-ai/sdk do TypeScript).
+    // Traz o cliente HTTP, os tipos da Messages API, count_tokens, tool use, thinking,
+    // streaming e saída estruturada (uma classe Java faz o papel do schema Zod).
+    // Usado em: a01p, a02p, a03p, a04p, a05p, a07p, a08p, a10p, a11p, a12p.
+    implementation 'com.anthropic:anthropic-java:2.70.0'
+
+    // SDK Java do Model Context Protocol (equivale ao @modelcontextprotocol/server e /client).
+    // Serve para criar o servidor e o cliente MCP do lab de MCP, Skills e tools.
+    // Usado em: a06p.
+    implementation 'io.modelcontextprotocol.sdk:mcp:2.0.1'
+
+    // Jackson: ler e escrever JSON (pedido.json, notas.json, settings.json, saída das tools).
+    // É o JSON.parse/stringify do Java. O SDK da Anthropic já usa Jackson por baixo.
+    // Usado em: a02p em diante.
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.3'
+
+    // Implementação de log que escreve no console. O SDK MCP loga via SLF4J e, sem uma
+    // implementação, o Java avisa que não achou logger.
+    // Usado em: a06p (e em qualquer lab em que você queira ver os logs).
+    runtimeOnly 'org.slf4j:slf4j-simple:2.0.17'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
