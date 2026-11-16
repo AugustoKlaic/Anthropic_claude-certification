@@ -1,0 +1,8 @@
+{
+  "model": "claude-opus-5",
+  "max_tokens": 2000,
+  "system": "Você é um engenheiro sênior. Responda em português, em no máximo três frases.",
+  "messages": [
+    { "role": "user", "content": "Meu serviço chama a API do Claude e às vezes recebe HTTP 529. O que é isso e o que eu faço?" }
+  ]
+}

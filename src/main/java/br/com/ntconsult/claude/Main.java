@@ -3,22 +3,51 @@ package br.com.ntconsult.claude;
 import br.com.ntconsult.claude.labs.a01p.CincoVezes;
 import br.com.ntconsult.claude.labs.a01p.ContarTokens;
 import br.com.ntconsult.claude.labs.a01p.Thinking;
+import br.com.ntconsult.claude.labs.a02p.ChamadaCrua;
+import br.com.ntconsult.claude.labs.a02p.MultiTurno;
+import br.com.ntconsult.claude.labs.a02p.ViaSdk;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 /**
- * Lab da aula 1 — Como o Claude responde.
+ * Ponto de entrada único de todos os labs. Rode este main na IDE.
  *
- * <p>Rode este main na IDE. Para executar só um passo, comente os outros.
+ * <p>Deixe ativo só o que quer executar e comente o resto: cada passo faz chamadas reais
+ * (e cobradas, exceto a contagem de tokens) na API.
  */
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        System.out.println("##### Passo 1: contar tokens (gratuito) #####");
+        System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8));
+        System.setErr(new PrintStream(new FileOutputStream(FileDescriptor.err), true, StandardCharsets.UTF_8));
+
+        // ===== Lab a01p — Como o Claude responde =====
+        passo("a01p - passo 1: contar tokens (gratuito)");
         ContarTokens.executar();
 
-        System.out.println("\n##### Passo 2: a mesma chamada cinco vezes #####");
+        passo("a01p - passo 2: a mesma chamada cinco vezes");
         CincoVezes.executar();
 
-        System.out.println("\n##### Passo 3: thinking e effort #####");
+        passo("a01p - passo 3: thinking e effort");
         Thinking.executar();
+
+        // ===== Lab a02p — Anatomia de uma requisição =====
+        passo("a02p - passo 1a: a chamada crua (sem SDK)");
+        ChamadaCrua.executar();
+
+        passo("a02p - passo 1b: os eventos do streaming (sem SDK)");
+        ChamadaCrua.executarStream();
+
+        passo("a02p - passo 2: o mesmo pedido pelo SDK");
+        ViaSdk.executar();
+
+        passo("a02p - passo 3: conversa de três turnos montada à mão");
+        MultiTurno.executar();
+    }
+
+    private static void passo(String titulo) {
+        System.out.println("\n##### " + titulo + " #####");
     }
 }
