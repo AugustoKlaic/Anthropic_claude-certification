@@ -6,6 +6,9 @@ import br.com.ntconsult.claude.labs.a01p.Thinking;
 import br.com.ntconsult.claude.labs.a02p.ChamadaCrua;
 import br.com.ntconsult.claude.labs.a02p.MultiTurno;
 import br.com.ntconsult.claude.labs.a02p.ViaSdk;
+import br.com.ntconsult.claude.labs.a03p.Cache;
+import br.com.ntconsult.claude.labs.a03p.Lote;
+import br.com.ntconsult.claude.labs.a03p.TresModelos;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -45,6 +48,19 @@ public class Main {
 
         passo("a02p - passo 3: conversa de três turnos montada à mão");
         MultiTurno.executar();
+
+        // ===== Lab a03p — Escolher o modelo e pagar a conta =====
+        passo("a03p - passo 3a: criar o lote (Batch API)");
+        Lote.criar();
+        passo("a03p - passo 3b: buscar os resultados do lote");
+        Lote.buscar();
+
+        passo("a03p - passo 1: o mesmo prompt nos três modelos");
+        TresModelos.executar();
+
+        passo("a03p - passo 2: prompt caching");
+        Cache.executar();
+
     }
 
     private static void passo(String titulo) {
