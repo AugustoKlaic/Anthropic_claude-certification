@@ -7,7 +7,8 @@ Tradução para Java dos labs do centro de estudos Anthropic (originais em TypeS
 | `a01p` | Como o Claude responde | traduzido |
 | `a02p` | Anatomia de uma requisição | traduzido |
 | `a03p` | Escolher o modelo e pagar a conta | traduzido |
-| `a04p` … `a12p` | | a traduzir |
+| `a04p` | Prompt que funciona, saída confiável | traduzido |
+| `a05p` … `a12p` | | a traduzir |
 
 ## Estrutura
 
@@ -23,7 +24,8 @@ Um projeto Gradle simples (Groovy, `build.gradle`), com um único módulo e uma 
     │   └── labs/                      # um pacote por lab
     │       ├── a01p/                  # ContarTokens, CincoVezes, Thinking
     │       ├── a02p/                  # ChamadaCrua, ViaSdk, MultiTurno
-    │       └── a03p/                  # Precos, TresModelos, Cache, Lote
+    │       ├── a03p/                  # Precos, TresModelos, Cache, Lote
+    │       └── a04p/                  # Triagem, TresPrompts, ForcarSchema, Defensivo
     └── resources
         ├── config.properties          # SUA chave e as opções dos labs
         └── labs/                      # arquivos de apoio de cada lab
@@ -55,6 +57,8 @@ Cada passo faz chamadas reais e cobradas na API (exceto `count_tokens`, que é g
 | `a03p.tamanho` | a03p | tamanho do contexto em caracteres (passo 2) |
 | `a03p.quebrar` | a03p | `true` quebra o cache de propósito (passo 2) |
 | `a03p.lote-id` | a03p | id do lote a buscar; em branco usa o `lote.txt` |
+| `a04p.modelo` | a04p | modelo dos três passos (padrão `claude-sonnet-5`) |
+| `a04p.versao` | a04p | `ruim`, `melhor` ou `boa`: roda uma versão só no passo 1 |
 
 ## Labs
 
@@ -89,6 +93,23 @@ Pontos de atenção:
 - Variações do passo 2, uma por vez: `a03p.quebrar=true` (cache quebrado fica mais caro que sem cache); `a03p.tamanho=8000` (cabe no mínimo do Opus 5, mas não no do Haiku 4.5, que não cacheia e não avisa); `a03p.modelo=claude-haiku-4-5-20251001`.
 - Variação do passo 1: `a03p.effort=low`.
 
+### a04p — Prompt que funciona, saída confiável
+
+Caso: triagem de tickets do Faturei (SaaS de notas fiscais). `Triagem.java` tem os 10 tickets rotulados (a régua), o schema e `ler()`, a leitura defensiva em cinco etapas. O zod do original virou validação à mão com Jackson.
+
+| Passo | Classe | O que faz |
+|---|---|---|
+| 1 | `TresPrompts.executar()` | prompts ruim, melhor e boa nos 10 tickets (30 chamadas): JSON que abre, categoria, prioridade e as 5 etapas |
+| 2 | `ForcarSchema.executar()` | schema derivado do record (`outputConfig(Triagem.class)`, o `parse()` do zod) e JSON Schema à mão em `output_config.format` |
+| 3a | `Defensivo.simular()` | sete respostas montadas à mão passam pelas 5 etapas; não chama a API |
+| 3b | `Defensivo.executar()` | `max_tokens` 40 (cortada, para na etapa 1) e depois 2000 |
+
+Pontos de atenção:
+- Os passos 2a (`ForcarSchema.ver()`) e 3a rodam sem chave e sem custo.
+- Passo 3b: `thinking` desligado para o teto de 40 cortar o JSON, e não o thinking. No Sonnet 5 pode; no Opus 5 só com effort `high` ou menor.
+- O número do passo 1 muda de rodada para rodada. No original, a "ruim" e a "melhor" davam 0/10 em JSON que abre (embrulhavam num bloco de código) e a "boa" 10/10.
+- Passo 2: o schema do SDK Java coloca o `enum` na gramática, mas `cliente_id` vira `string` obrigatória, sem `null`. Compare com o schema à mão.
+
 ## Próximos labs
 
-Crie o pacote `labs/a04p` com as classes do lab, coloque os arquivos de apoio em `src/main/resources/labs/a04p/`, as opções novas no `config.properties` (prefixo `a04p.`) e chame os passos na `Main`. Se precisar de biblioteca nova, adicione no `build.gradle` com um comentário.
+Crie o pacote `labs/a05p` com as classes do lab, coloque os arquivos de apoio em `src/main/resources/labs/a05p/`, as opções novas no `config.properties` (prefixo `a05p.`) e chame os passos na `Main`. Se precisar de biblioteca nova, adicione no `build.gradle` com um comentário.

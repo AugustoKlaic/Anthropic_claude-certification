@@ -9,6 +9,9 @@ import br.com.ntconsult.claude.labs.a02p.ViaSdk;
 import br.com.ntconsult.claude.labs.a03p.Cache;
 import br.com.ntconsult.claude.labs.a03p.Lote;
 import br.com.ntconsult.claude.labs.a03p.TresModelos;
+import br.com.ntconsult.claude.labs.a04p.Defensivo;
+import br.com.ntconsult.claude.labs.a04p.ForcarSchema;
+import br.com.ntconsult.claude.labs.a04p.TresPrompts;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -26,7 +29,7 @@ public class Main {
         System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8));
         System.setErr(new PrintStream(new FileOutputStream(FileDescriptor.err), true, StandardCharsets.UTF_8));
 
-        // ===== Lab a01p — Como o Claude responde =====
+//        // ===== Lab a01p — Como o Claude responde =====
         passo("a01p - passo 1: contar tokens (gratuito)");
         ContarTokens.executar();
 
@@ -36,7 +39,7 @@ public class Main {
         passo("a01p - passo 3: thinking e effort");
         Thinking.executar();
 
-        // ===== Lab a02p — Anatomia de uma requisição =====
+//        // ===== Lab a02p — Anatomia de uma requisição =====
         passo("a02p - passo 1a: a chamada crua (sem SDK)");
         ChamadaCrua.executar();
 
@@ -49,7 +52,7 @@ public class Main {
         passo("a02p - passo 3: conversa de três turnos montada à mão");
         MultiTurno.executar();
 
-        // ===== Lab a03p — Escolher o modelo e pagar a conta =====
+//        // ===== Lab a03p — Escolher o modelo e pagar a conta =====
         passo("a03p - passo 3a: criar o lote (Batch API)");
         Lote.criar();
         passo("a03p - passo 3b: buscar os resultados do lote");
@@ -60,6 +63,19 @@ public class Main {
 
         passo("a03p - passo 2: prompt caching");
         Cache.executar();
+
+//         ===== Lab a04p — Prompt que funciona, saída confiável =====
+        passo("a04p - passo 1: três prompts, dez tickets (30 chamadas)");
+        TresPrompts.executar();
+
+        passo("a04p - passo 2: forçar o schema");
+        ForcarSchema.executar();
+
+        passo("a04p - passo 3a: parse defensivo, simulado (sem API)");
+        Defensivo.simular();
+
+        passo("a04p - passo 3b: parse defensivo, resposta cortada de verdade");
+        Defensivo.executar();
 
     }
 
