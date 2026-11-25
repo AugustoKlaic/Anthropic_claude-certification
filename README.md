@@ -8,7 +8,8 @@ Tradução para Java dos labs do centro de estudos Anthropic (originais em TypeS
 | `a02p` | Anatomia de uma requisição | traduzido |
 | `a03p` | Escolher o modelo e pagar a conta | traduzido |
 | `a04p` | Prompt que funciona, saída confiável | traduzido |
-| `a05p` … `a12p` | | a traduzir |
+| `a05p` | Tool use por dentro | traduzido |
+| `a06p` … `a12p` | | a traduzir |
 
 ## Estrutura
 
@@ -25,7 +26,8 @@ Um projeto Gradle simples (Groovy, `build.gradle`), com um único módulo e uma 
     │       ├── a01p/                  # ContarTokens, CincoVezes, Thinking
     │       ├── a02p/                  # ChamadaCrua, ViaSdk, MultiTurno
     │       ├── a03p/                  # Precos, TresModelos, Cache, Lote
-    │       └── a04p/                  # Triagem, TresPrompts, ForcarSchema, Defensivo
+    │       ├── a04p/                  # Triagem, TresPrompts, ForcarSchema, Defensivo
+    │       └── a05p/                  # Faturei, Loop, LoopNaMao, Paralelas, Quebrar, Aprovacao
     └── resources
         ├── config.properties          # SUA chave e as opções dos labs
         └── labs/                      # arquivos de apoio de cada lab
@@ -59,6 +61,11 @@ Cada passo faz chamadas reais e cobradas na API (exceto `count_tokens`, que é g
 | `a03p.lote-id` | a03p | id do lote a buscar; em branco usa o `lote.txt` |
 | `a04p.modelo` | a04p | modelo dos três passos (padrão `claude-sonnet-5`) |
 | `a04p.versao` | a04p | `ruim`, `melhor` ou `boa`: roda uma versão só no passo 1 |
+| `a05p.modelo` | a05p | modelo dos quatro passos (padrão `claude-sonnet-5`) |
+| `a05p.serial` | a05p | `true` liga `disable_parallel_tool_use` no passo 2 |
+| `a05p.quebra` | a05p | modo do passo 3 (`generico`, `instrutivo`, `texto-antes`, `faltou-um`, `cortada`); em branco roda todos |
+| `a05p.teto` | a05p | teto curto do modo `cortada` (padrão 3) |
+| `a05p.aprovar` | a05p | `s` ou `n` responde o passo 4 sem perguntar; em branco pergunta no console |
 
 ## Labs
 
@@ -110,6 +117,24 @@ Pontos de atenção:
 - O número do passo 1 muda de rodada para rodada. No original, a "ruim" e a "melhor" davam 0/10 em JSON que abre (embrulhavam num bloco de código) e a "boa" 10/10.
 - Passo 2: o schema do SDK Java coloca o `enum` na gramática, mas `cliente_id` vira `string` obrigatória, sem `null`. Compare com o schema à mão.
 
+### a05p — Tool use por dentro
+
+Caso: o suporte do Faturei consultando notas e clientes. O loop de tool use é escrito na mão, sem framework. `Faturei.java` tem as três definições de tool (é só isto que o Claude vê) e `executar()` (o código que roda cada uma). `Loop.java` é o loop em si.
+
+| Passo | Classe | O que faz |
+|---|---|---|
+| 1 | `LoopNaMao.executar()` | duas tools em sequência (a nota traz o `cliente_id`); mostra o custo das tools com `count_tokens` e as voltas |
+| 2 | `Paralelas.executar()` | três notas independentes; o Claude pede as três de uma vez. `a05p.serial=true` compara com uma tool por resposta |
+| 3 | `Quebrar.executar()` | erro genérico x instrutivo, mensagem de volta errada (400) e `tool_use` cortado por `max_tokens` |
+| 4 | `Aprovacao.executar()` | `faturei_cancelar_nota` não tem volta: o loop pergunta antes de executar |
+
+Pontos de atenção:
+- O Claude decide sozinho quantas tools pede por volta. Se no passo 2 ele não pedir as três notas de uma vez, rode de novo.
+- Passo 3 sem `a05p.quebra` roda os cinco modos em sequência (uns 10 pedidos). No `faltou-um`, se o Claude pedir só uma tool na primeira volta, a mensagem de volta sai vazia e o erro muda: rode de novo.
+- O modo `cortada` desliga o thinking e força a tool: com teto de 3 tokens, o corte cai dentro do `tool_use`. No Opus 5 só dá para desligar o thinking com effort `high` ou menor.
+- Passo 4: o `Scanner` lê do console da IDE. Para não digitar, use `a05p.aprovar=s` ou `n`. Rodar o `s` cancela a nota 1045 só em memória; ela volta ao normal na próxima execução.
+- Os dados das notas ficam em memória: o passo 4 com `s` e depois outra chamada do `Main` na mesma execução veria a nota já cancelada.
+
 ## Próximos labs
 
-Crie o pacote `labs/a05p` com as classes do lab, coloque os arquivos de apoio em `src/main/resources/labs/a05p/`, as opções novas no `config.properties` (prefixo `a05p.`) e chame os passos na `Main`. Se precisar de biblioteca nova, adicione no `build.gradle` com um comentário.
+Crie o pacote `labs/a06p` com as classes do lab, coloque os arquivos de apoio em `src/main/resources/labs/a06p/`, as opções novas no `config.properties` (prefixo `a06p.`) e chame os passos na `Main`. Se precisar de biblioteca nova, adicione no `build.gradle` com um comentário.

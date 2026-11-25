@@ -12,6 +12,10 @@ import br.com.ntconsult.claude.labs.a03p.TresModelos;
 import br.com.ntconsult.claude.labs.a04p.Defensivo;
 import br.com.ntconsult.claude.labs.a04p.ForcarSchema;
 import br.com.ntconsult.claude.labs.a04p.TresPrompts;
+import br.com.ntconsult.claude.labs.a05p.Aprovacao;
+import br.com.ntconsult.claude.labs.a05p.LoopNaMao;
+import br.com.ntconsult.claude.labs.a05p.Paralelas;
+import br.com.ntconsult.claude.labs.a05p.Quebrar;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -76,6 +80,19 @@ public class Main {
 
         passo("a04p - passo 3b: parse defensivo, resposta cortada de verdade");
         Defensivo.executar();
+
+//         ===== Lab a05p — Tool use por dentro =====
+        passo("a05p - passo 1: o loop na mão (duas tools em sequência)");
+        LoopNaMao.executar();
+
+        passo("a05p - passo 2: chamadas paralelas");
+        Paralelas.executar();
+
+        passo("a05p - passo 3: quebrar de propósito (a05p.quebra escolhe o modo; em branco roda todos)");
+        Quebrar.executar();
+
+        passo("a05p - passo 4: aprovação humana antes de cancelar a nota");
+        Aprovacao.executar();
 
     }
 
