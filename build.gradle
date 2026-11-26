@@ -40,3 +40,12 @@ dependencies {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
+// Copia as bibliotecas do projeto para build/mcp-libs. O claude-code/a06p/.mcp.json usa essa pasta
+// para o Claude Code iniciar o servidor MCP (Servidor.java) com um simples "java -cp ...".
+// Rode uma vez antes do passo 2 do a06p:  ./gradlew copiarLibs
+tasks.register('copiarLibs', Copy) {
+    dependsOn 'classes'
+    from configurations.runtimeClasspath
+    into layout.buildDirectory.dir('mcp-libs')
+}

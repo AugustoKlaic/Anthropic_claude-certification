@@ -9,7 +9,8 @@ Tradução para Java dos labs do centro de estudos Anthropic (originais em TypeS
 | `a03p` | Escolher o modelo e pagar a conta | traduzido |
 | `a04p` | Prompt que funciona, saída confiável | traduzido |
 | `a05p` | Tool use por dentro | traduzido |
-| `a06p` … `a12p` | | a traduzir |
+| `a06p` | MCP, Skills e tools: quando usar o quê | traduzido |
+| `a07p` … `a12p` | | a traduzir |
 
 ## Estrutura
 
@@ -27,13 +28,23 @@ Um projeto Gradle simples (Groovy, `build.gradle`), com um único módulo e uma 
     │       ├── a02p/                  # ChamadaCrua, ViaSdk, MultiTurno
     │       ├── a03p/                  # Precos, TresModelos, Cache, Lote
     │       ├── a04p/                  # Triagem, TresPrompts, ForcarSchema, Defensivo
-    │       └── a05p/                  # Faturei, Loop, LoopNaMao, Paralelas, Quebrar, Aprovacao
+    │       ├── a05p/                  # Faturei, Loop, LoopNaMao, Paralelas, Quebrar, Aprovacao
+    │       └── a06p/                  # Faturei, Servidor (MCP), Cliente
     └── resources
         ├── config.properties          # SUA chave e as opções dos labs
         └── labs/                      # arquivos de apoio de cada lab
             ├── a01p/prompt.md
             ├── a02p/pedido.json
-            └── a03p/contexto.txt
+            ├── a03p/contexto.txt
+            └── a06p/rejeicoes.md
+```
+
+Fora do `src`, a pasta `claude-code/` guarda o que o **Claude Code** lê (não é código Java do projeto):
+
+```
+claude-code/a06p
+├── .mcp.json                          # pluga o servidor MCP no Claude Code (passo 2)
+└── skill/.claude/skills/faturei-notas # a Skill (passo 3): SKILL.md, rejeicoes.md, scripts/Consultar.java
 ```
 
 ## Como usar
@@ -135,6 +146,64 @@ Pontos de atenção:
 - Passo 4: o `Scanner` lê do console da IDE. Para não digitar, use `a05p.aprovar=s` ou `n`. Rodar o `s` cancela a nota 1045 só em memória; ela volta ao normal na próxima execução.
 - Os dados das notas ficam em memória: o passo 4 com `s` e depois outra chamada do `Main` na mesma execução veria a nota já cancelada.
 
+### a06p — MCP, Skills e tools: quando usar o quê
+
+Mesmo caso da aula 5 (Faturei), entregue de dois jeitos: um **servidor MCP** (código Java) e uma **Skill** (pasta para o Claude Code). Os passos 1 e 4 não chamam modelo e não precisam de chave; os passos 2 e 3 usam o Claude Code com o seu login.
+
+A pergunta das duas rodadas: **"Por que a nota 1043 do Faturei foi rejeitada, e em que plano está o cliente dela?"**
+
+| Passo | O que é | Como rodar |
+|---|---|---|
+| 1 | `Servidor` (MCP, stdio) e `Cliente.executar()`: o cliente inicia o servidor como subprocesso e mostra cada mensagem JSON-RPC (`→`) | pela `Main` |
+| 1b | `Cliente.quebrar()`: o servidor escreve no stdout e a resposta se perde (timeout de 5 s) | pela `Main` |
+| 2 | plugar o servidor no Claude Code | terminal: veja abaixo |
+| 3 | a mesma pergunta com a Skill `faturei-notas` | terminal: veja abaixo |
+| 4 | comparar MCP x Skill | quadro no fim desta seção |
+
+**Passo 1** — `Servidor.java` tem as três primitivas: duas tools (`buscar_nota`, `buscar_cliente`), um resource (`faturei://rejeicoes`) e um prompt (`explicar-rejeicao`). O `Servidor` não é chamado pela `Main`: o `Cliente` o inicia (`java -cp ... Servidor`). Pontos para parar na saída:
+- A revisão do protocolo aparece (`2025-11-25`) e o cliente abre com `initialize` e `notifications/initialized`.
+- **Erro de execução** (nota 9999): volta como resultado com `isError: true` e mensagem que diz o que fazer. **Tool que não existe**: erro JSON-RPC (`-32602`). O SDK Java troca o nome na mensagem por `invalid_tool_name`.
+- No stdio, o stdout **é** o canal do JSON-RPC. Log de servidor vai no stderr (`System.err`).
+
+**Passo 2 — plugar no Claude Code.** Uma vez, na raiz do projeto, para copiar as bibliotecas que o `.mcp.json` usa:
+
+```bash
+./gradlew copiarLibs
+```
+
+Depois, abra o Claude Code **dentro de `claude-code/a06p`** (aberto na raiz do projeto, ele não vê o `.mcp.json`):
+
+```bash
+cd claude-code/a06p
+claude
+```
+
+O servidor de projeto pede aprovação (veio do repositório). Depois `/mcp` mostra `faturei` com 2 tools; faça a pergunta e repare no nome `mcp__faturei__buscar_nota` e no `ToolSearch` antes. O resource: `@` e `faturei:faturei://rejeicoes`. O prompt: `/mcp__faturei__explicar-rejeicao 1043`. O `.mcp.json` usa `;` como separador do classpath (Windows); em Linux/macOS troque por `:`. O mesmo registro sai de `claude mcp add --scope project faturei -- java -cp "..." br.com.ntconsult.claude.labs.a06p.Servidor`.
+
+**Passo 3 — a mesma coisa como Skill.**
+
+```bash
+cd claude-code/a06p/skill
+claude --strict-mcp-config
+```
+
+`--strict-mcp-config` desliga os servidores MCP da sessão. Sem ele, o Claude Code acha o `.mcp.json` da pasta de cima e a comparação deixa de ser justa. Faça a mesma pergunta. O Claude decide sozinho se usa a Skill; se não disparar, comece a pergunta com `/faturei-notas`. O script da Skill é `scripts/Consultar.java`, que roda direto (`java Consultar.java nota 1043`), sem compilar. Ele tem uma cópia dos dados de `Faturei.java`, porque roda fora do projeto.
+
+**Passo 4 — comparar:**
+
+| | Servidor MCP | Skill |
+|---|---|---|
+| O que dá ao Claude | Tools (ação e dado), resource, prompt | Instrução e conhecimento, mais um script |
+| No começo da sessão | Os nomes das tools | A descrição (~70 tokens) |
+| Onde o código roda | No processo do servidor | No Bash da sessão |
+| Quem instala | Quem configura o cliente (`claude mcp add`, `.mcp.json`) | Quem copia a pasta para `.claude/skills/` |
+| Serve a outro app | Qualquer cliente MCP | Cada superfície tem as suas Skills |
+
+Pontos de atenção:
+- O SDK MCP Java (`2.0.1`) fala a revisão `2025-11-25`: não tem o `server/discover` nem a revisão `2026-07-28` do SDK TypeScript, então não há o `cliente:2025` do original.
+- O SDK MCP loga o handshake e o erro do passo "quebrar". Está desligado em `src/main/resources/simplelogger.properties` (troque `off` por `info` para ver).
+- O `rejeicoes.md` existe em dois lugares: `resources/labs/a06p/` (o servidor serve como resource) e dentro da Skill. Mantenha os dois iguais.
+
 ## Próximos labs
 
-Crie o pacote `labs/a06p` com as classes do lab, coloque os arquivos de apoio em `src/main/resources/labs/a06p/`, as opções novas no `config.properties` (prefixo `a06p.`) e chame os passos na `Main`. Se precisar de biblioteca nova, adicione no `build.gradle` com um comentário.
+Crie o pacote `labs/a07p` com as classes do lab, coloque os arquivos de apoio em `src/main/resources/labs/a07p/`, as opções novas no `config.properties` (prefixo `a07p.`) e chame os passos na `Main`. Se precisar de biblioteca nova, adicione no `build.gradle` com um comentário.

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "faturei": {
+      "type": "stdio",
+      "command": "java",
+      "args": [
+        "-cp",
+        "../../build/classes/java/main;../../build/resources/main;../../build/mcp-libs/*",
+        "br.com.ntconsult.claude.labs.a06p.Servidor"
+      ]
+    }
+  }
+}

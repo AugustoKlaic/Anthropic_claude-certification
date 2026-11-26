@@ -16,6 +16,7 @@ import br.com.ntconsult.claude.labs.a05p.Aprovacao;
 import br.com.ntconsult.claude.labs.a05p.LoopNaMao;
 import br.com.ntconsult.claude.labs.a05p.Paralelas;
 import br.com.ntconsult.claude.labs.a05p.Quebrar;
+import br.com.ntconsult.claude.labs.a06p.Cliente;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -33,66 +34,74 @@ public class Main {
         System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8));
         System.setErr(new PrintStream(new FileOutputStream(FileDescriptor.err), true, StandardCharsets.UTF_8));
 
-//        // ===== Lab a01p — Como o Claude responde =====
-        passo("a01p - passo 1: contar tokens (gratuito)");
-        ContarTokens.executar();
+////        // ===== Lab a01p — Como o Claude responde =====
+//        passo("a01p - passo 1: contar tokens (gratuito)");
+//        ContarTokens.executar();
+//
+//        passo("a01p - passo 2: a mesma chamada cinco vezes");
+//        CincoVezes.executar();
+//
+//        passo("a01p - passo 3: thinking e effort");
+//        Thinking.executar();
+//
+////        // ===== Lab a02p — Anatomia de uma requisição =====
+//        passo("a02p - passo 1a: a chamada crua (sem SDK)");
+//        ChamadaCrua.executar();
+//
+//        passo("a02p - passo 1b: os eventos do streaming (sem SDK)");
+//        ChamadaCrua.executarStream();
+//
+//        passo("a02p - passo 2: o mesmo pedido pelo SDK");
+//        ViaSdk.executar();
+//
+//        passo("a02p - passo 3: conversa de três turnos montada à mão");
+//        MultiTurno.executar();
+//
+////        // ===== Lab a03p — Escolher o modelo e pagar a conta =====
+//        passo("a03p - passo 3a: criar o lote (Batch API)");
+//        Lote.criar();
+//        passo("a03p - passo 3b: buscar os resultados do lote");
+//        Lote.buscar();
+//
+//        passo("a03p - passo 1: o mesmo prompt nos três modelos");
+//        TresModelos.executar();
+//
+//        passo("a03p - passo 2: prompt caching");
+//        Cache.executar();
+//
+////         ===== Lab a04p — Prompt que funciona, saída confiável =====
+//        passo("a04p - passo 1: três prompts, dez tickets (30 chamadas)");
+//        TresPrompts.executar();
+//
+//        passo("a04p - passo 2: forçar o schema");
+//        ForcarSchema.executar();
+//
+//        passo("a04p - passo 3a: parse defensivo, simulado (sem API)");
+//        Defensivo.simular();
+//
+//        passo("a04p - passo 3b: parse defensivo, resposta cortada de verdade");
+//        Defensivo.executar();
+//
+////         ===== Lab a05p — Tool use por dentro =====
+//        passo("a05p - passo 1: o loop na mão (duas tools em sequência)");
+//        LoopNaMao.executar();
+//
+//        passo("a05p - passo 2: chamadas paralelas");
+//        Paralelas.executar();
+//
+//        passo("a05p - passo 3: quebrar de propósito (a05p.quebra escolhe o modo; em branco roda todos)");
+//        Quebrar.executar();
+//
+//        passo("a05p - passo 4: aprovação humana antes de cancelar a nota");
+//        Aprovacao.executar();
 
-        passo("a01p - passo 2: a mesma chamada cinco vezes");
-        CincoVezes.executar();
+        // ===== Lab a06p — MCP, Skills e tools: quando usar o quê =====
+        // Passos 2 e 3 (plugar o servidor e a Skill no Claude Code) são feitos no terminal: veja o README.
+        passo("a06p - passo 1: o servidor MCP e o protocolo (sem modelo, sem chave)");
+        Cliente.executar();
 
-        passo("a01p - passo 3: thinking e effort");
-        Thinking.executar();
-
-//        // ===== Lab a02p — Anatomia de uma requisição =====
-        passo("a02p - passo 1a: a chamada crua (sem SDK)");
-        ChamadaCrua.executar();
-
-        passo("a02p - passo 1b: os eventos do streaming (sem SDK)");
-        ChamadaCrua.executarStream();
-
-        passo("a02p - passo 2: o mesmo pedido pelo SDK");
-        ViaSdk.executar();
-
-        passo("a02p - passo 3: conversa de três turnos montada à mão");
-        MultiTurno.executar();
-
-//        // ===== Lab a03p — Escolher o modelo e pagar a conta =====
-        passo("a03p - passo 3a: criar o lote (Batch API)");
-        Lote.criar();
-        passo("a03p - passo 3b: buscar os resultados do lote");
-        Lote.buscar();
-
-        passo("a03p - passo 1: o mesmo prompt nos três modelos");
-        TresModelos.executar();
-
-        passo("a03p - passo 2: prompt caching");
-        Cache.executar();
-
-//         ===== Lab a04p — Prompt que funciona, saída confiável =====
-        passo("a04p - passo 1: três prompts, dez tickets (30 chamadas)");
-        TresPrompts.executar();
-
-        passo("a04p - passo 2: forçar o schema");
-        ForcarSchema.executar();
-
-        passo("a04p - passo 3a: parse defensivo, simulado (sem API)");
-        Defensivo.simular();
-
-        passo("a04p - passo 3b: parse defensivo, resposta cortada de verdade");
-        Defensivo.executar();
-
-//         ===== Lab a05p — Tool use por dentro =====
-        passo("a05p - passo 1: o loop na mão (duas tools em sequência)");
-        LoopNaMao.executar();
-
-        passo("a05p - passo 2: chamadas paralelas");
-        Paralelas.executar();
-
-        passo("a05p - passo 3: quebrar de propósito (a05p.quebra escolhe o modo; em branco roda todos)");
-        Quebrar.executar();
-
-        passo("a05p - passo 4: aprovação humana antes de cancelar a nota");
-        Aprovacao.executar();
+        passo("a06p - passo 1: quebrar de propósito (o servidor escreve no stdout)");
+        Cliente.quebrar();
 
     }
 
